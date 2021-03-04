@@ -12,6 +12,8 @@ use ZeroBounce\HttpClient\HttpClient;
  */
 class Base extends TestCase
 {
+    const HTTP_OPTIONS = [];
+
     /**
      * @var Api
      */
@@ -29,7 +31,7 @@ class Base extends TestCase
         }
         
         /** @var HttpClient $client */
-        $client = new HttpClient($apiKey);
+        $client = new HttpClient($apiKey, static::HTTP_OPTIONS);
         
         /** @var Api api */
         $this->api = new Api($client);

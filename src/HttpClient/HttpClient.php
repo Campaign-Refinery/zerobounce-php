@@ -45,7 +45,7 @@ class HttpClient implements HttpClientInterface
             throw new ErrorException('Please provide a valid api key!');
         }
         $this->apiKey = $apiKey;
-        $this->client = new Client(array_merge_recursive(self::$options, $options));
+        $this->client = new Client(array_replace_recursive(self::$options, $options));
     }
 
     /**
@@ -53,7 +53,7 @@ class HttpClient implements HttpClientInterface
      *
      * @return array
      */
-    protected function mergeDefaultParams(array $params = []): array
+    protected function mergeDefaultGetParams(array $params = []): array
     {
         return array_merge_recursive([
             'query' => [
@@ -61,7 +61,38 @@ class HttpClient implements HttpClientInterface
             ]
         ], $params);
     }
-    
+
+    /**
+     * @param array $params
+     *
+     * @return array
+     */
+    protected function mergeDefaultFormParams(array $params = []): array
+    {
+        return array_merge_recursive([
+            'form_params' => [
+                'api_key' => $this->apiKey
+            ]
+        ], $params);
+    }
+
+    /**
+     * @param array $params
+     *
+     * @return array
+     */
+    protected function mergeDefaultMultipartParams(array $params = []): array
+    {
+        return array_merge_recursive([
+            'multipart' => [
+                [
+                    'name'     => 'api_key',
+                    'contents' => $this->apiKey
+                ]
+            ]
+        ], $params);
+    }
+
     /**
      * @param string $path
      * @param array $params
@@ -72,7 +103,45 @@ class HttpClient implements HttpClientInterface
     public function get(string $path = '', array $params = []): HttpResponseInterface
     {
         try {
-            $response = $this->client->get($path, $this->mergeDefaultParams($params));
+            $response = $this->client->get($path, $this->mergeDefaultGetParams($params));
+            $response = new HttpResponse((string)$response->getBody(), (int)$response->getStatusCode(), (array)$response->getHeaders());
+        } catch (BadResponseException $e) {
+            throw new ClientException($e->getMessage(), $e->getCode());
+        }
+
+        return $response;
+    }
+
+    /**
+     * @param string $path
+     * @param array $params
+     *
+     * @return HttpResponseInterface
+     * @throws ClientException
+     */
+    public function postForm(string $path = '', array $params = []): HttpResponseInterface
+    {
+        try {
+            $response = $this->client->post($path, $this->mergeDefaultFormParams($params));
+            $response = new HttpResponse((string)$response->getBody(), (int)$response->getStatusCode(), (array)$response->getHeaders());
+        } catch (BadResponseException $e) {
+            throw new ClientException($e->getMessage(), $e->getCode());
+        }
+
+        return $response;
+    }
+
+    /**
+     * @param string $path
+     * @param array $params
+     *
+     * @return HttpResponseInterface
+     * @throws ClientException
+     */
+    public function postMultipart(string $path = '', array $params = []): HttpResponseInterface
+    {
+        try {
+            $response = $this->client->post($path, $this->mergeDefaultMultipartParams($params));
             $response = new HttpResponse((string)$response->getBody(), (int)$response->getStatusCode(), (array)$response->getHeaders());
         } catch (BadResponseException $e) {
             throw new ClientException($e->getMessage(), $e->getCode());

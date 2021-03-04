@@ -2,10 +2,8 @@
 
 namespace ZeroBounce;
 
-use ZeroBounce\HttpClient\HttpClient;
-use ZeroBounce\HttpClient\HttpResponse;
-use ZeroBounce\Response\CreditsResponse;
-use ZeroBounce\Response\ValidateResponse;
+use ZeroBounce\HttpClient\{HttpClient, HttpResponse};
+use ZeroBounce\Response\{CreditsResponse, SendfileResponse, ValidateResponse};
 
 /**
  * Class Api
@@ -62,5 +60,69 @@ class Api implements ApiInterface
         $response = CreditsResponse::fromResponse($response);
         
         return $response;
+    }
+
+    /**
+     * @return SendfileResponse
+     * @throws Exception\ClientException
+     */
+    public function sendfile(string $fileName, array $params = []): SendfileResponse
+    {
+        $params = array_map(function($k, $p): array {
+            return [
+                'name' => $k,
+                'contents' => $p
+            ];
+        }, array_keys($params), $params);
+
+        /** @var HttpResponse $response */
+        $response = $this->httpClient->postMultipart('sendfile', [
+            'multipart' => array_merge([
+                [
+                    'name'     => 'file',
+                    'contents' => fopen($fileName, 'r')
+                ]
+            ], $params),
+        ]);
+
+        /** @var SendfileResponse $response */
+        $response = SendfileResponse::fromResponse($response);
+        
+        return $response;
+    }
+
+    /**
+     * @return SendfileResponse
+     * @throws Exception\ClientException
+     */
+    public function filestatus(string $fileId): SendfileResponse
+    {
+        /** @var HttpResponse $response */
+        $response = $this->httpClient->get('filestatus', [
+            'query' => [
+                'file_id' => $fileId
+            ]
+        ]);
+
+        /** @var SendfileResponse $response */
+        $response = SendfileResponse::fromResponse($response);
+        
+        return $response;
+    }
+
+    /**
+     * @return SendfileResponse
+     * @throws Exception\ClientException
+     */
+    public function getfile(string $fileId): string
+    {
+        /** @var HttpResponse $response */
+        $response = $this->httpClient->get('getfile', [
+            'query' => [
+                'file_id' => $fileId
+            ]
+        ]);
+
+        return $response->getBody();
     }
 }

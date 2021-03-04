@@ -1,0 +1,5 @@
+1,valid@example.com
+2,invalid@example.com
+3,catch_all@example.com
+4,donotmail@example.com
+5,unknown@example.com

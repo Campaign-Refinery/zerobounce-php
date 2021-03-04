@@ -18,6 +18,7 @@ class ValidateTest extends Base
     {
         /** @var ValidateResponse $response */
         $response = $this->api->validate('valid@example.com');
+
         $this->assertInstanceOf(ValidateResponse::class, $response);
         $this->assertTrue($response->isValid());
     }
