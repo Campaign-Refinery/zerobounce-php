@@ -29,7 +29,7 @@ class SendfileTest extends Base
     final public function testSendfile(): string
     {
         /** @var SendfileResponse $response */
-        $response = $this->api->sendfile('./bulktest.csv', [
+        $response = $this->api->sendfile(fopen('./bulktest.csv', 'r'), [
             'email_address_column' => 2,
         ]);
 

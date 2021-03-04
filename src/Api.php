@@ -63,10 +63,13 @@ class Api implements ApiInterface
     }
 
     /**
+     * @param resource $fileResource
+     * @param array $params
+     * 
      * @return SendfileResponse
      * @throws Exception\ClientException
      */
-    public function sendfile(string $fileName, array $params = []): SendfileResponse
+    public function sendfile($fileResource, array $params = []): SendfileResponse
     {
         $params = array_map(function($k, $p): array {
             return [
@@ -80,7 +83,7 @@ class Api implements ApiInterface
             'multipart' => array_merge([
                 [
                     'name'     => 'file',
-                    'contents' => fopen($fileName, 'r')
+                    'contents' => $fileResource
                 ]
             ], $params),
         ]);
